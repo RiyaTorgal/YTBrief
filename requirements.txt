@@ -1,0 +1,5 @@
+streamlit
+python-dotenv
+beautifulsoup4
+requests
+youtube-transcript-api
