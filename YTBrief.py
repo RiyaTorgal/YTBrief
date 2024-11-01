@@ -202,6 +202,8 @@ def main():
                 title, channel = extractMetaData(url)
                 st.subheader("Title:")
                 st.write(title)
+                st.subheader("Channel:")
+                st.write(channel)
                     
                 # Show thumbnail
                 with st.spinner('Downloading thumbnail...'):
