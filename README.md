@@ -39,7 +39,7 @@ YTBrief is a simple web application that summarizes YouTube videos using the Gem
    ```bash
    pip install -r requirements.txt
    ```
-4. Create a `.env` file in the root directory of the project and add your Gemini API key
+4. Create a `.env` file in the root directory of the project and add your Gemini and YouTube Data API key
 
     ```bash
     GEMINI_API_KEY = "your_api_key_here"
