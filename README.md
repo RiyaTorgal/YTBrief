@@ -1,6 +1,6 @@
 # YTBrief: YouTube AI Video Summarizer
 
-![YTBrief Logo](https://github.com/RiyaTorgal/YTBrief/blob/main/images/YTBrief.png)
+![YTBrief Application](https://github.com/RiyaTorgal/YTBrief/blob/main/images/YTBrief1.png)
 
 YTBrief is a simple web application that summarizes YouTube videos using the Gemini API. Users can paste a YouTube link, and the application retrieves the video’s transcript and generates a concise summary, making it easier to grasp the content without watching the entire video.
 
@@ -58,7 +58,10 @@ YTBrief is a simple web application that summarizes YouTube videos using the Gem
 3. Enter a YouTube URL in the input field and click the "Summarize" button. The application will display the video title, channel name, thumbnail, and the generated summary.
 
 ## Output
-![Demo GIF](https://github.com/RiyaTorgal/YTBrief/blob/main/images/YTBrief_Output-ezgif.com-optimize.gif)
+![Demo GIF](https://github.com/RiyaTorgal/YTBrief/blob/main/images/YTBrief1_Output.gif)
 
 ## Contributions
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
+
+## License
+This project is licensed under the MIT license - see the LICENSE file for details.
