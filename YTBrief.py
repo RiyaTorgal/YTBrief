@@ -8,8 +8,10 @@ from summarize_text import generate_summary_with_gemini, get_video_statistics
 load_dotenv()
 
 # Set API keys
-YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY') 
-API_KEY = os.getenv('GEMINI_API_KEY') 
+# YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY') 
+# API_KEY = os.getenv('GEMINI_API_KEY')
+YOUTUBE_API_KEY = st.secrets['YOUTUBE_API_KEY']
+API_KEY = st.secrets['GEMINI_API_KEY']
 
 st.set_page_config(page_title="YTBrief YouTube AI Video Summarizer", layout="wide")
 
