@@ -1,6 +1,5 @@
 import os
 import streamlit as st
-import requests
 import google.generativeai as genai
 from typing import List
 import streamlit as st
@@ -8,9 +7,6 @@ from datetime import datetime
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from dotenv import load_dotenv
-from langchain.llms import OpenAI
-from langchain.chains import SummarizeChain
-from langchain.document_loaders import TextLoader
 
 load_dotenv()
 
