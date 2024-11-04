@@ -1,5 +1,5 @@
 import streamlit as st
-from scrape_yt import extractVidID, transcript
+from scrape_yt import extract_and_validate_video_id, get_transcript
 import os
 from dotenv import load_dotenv
 from summarize_text import generate_summary_with_gemini, get_video_statistics
