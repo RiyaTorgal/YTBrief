@@ -16,54 +16,19 @@ def get_youtube_client():
     # return build('youtube', 'v3', developerKey=os.getenv('YOUTUBE_API_KEY'))
     return build('youtube', 'v3', developerKey=st.secrets['YOUTUBE_API_KEY'])
 
-# @st.cache_data(ttl=3600)  # Cache for 1 hour
-# def generate_summary_with_gemini(transcript_text, max_retries=3):
-#   """Improved summarization with LangChain"""
-#   # Break long transcripts into chunks for efficient processing
-#   max_chunk_length = 30000  # Adjust as needed
-#   chunks = [transcript_text[i:i + max_chunk_length]
-#             for i in range(0, len(transcript_text), max_chunk_length)]
-
-#   summaries = []
-#   for chunk in chunks:
-#     # Create a LangChain text loader
-#     loader = TextLoader(text=chunk)
-
-#     # Create a summarization chain using OpenAI
-#     summarize_chain = SummarizeChain.from_chain_type(
-#         llm=OpenAI(openai_api_key=os.getenv("GEMINI_API_KEY")),
-#         chain_type="refine"  # Use refined summarization for better quality
-#     )
-
-#     # Generate summaries for each chunk
-#     summary = summarize_chain.run(loader)
-#     summaries.append(summary)
-
-#   # Combine summaries (optional)
-#   if len(summaries) > 1:
-#     combined_text = " ".join(summaries)
-#     try:
-#       final_summary = generate_summary_with_gemini(combined_text)  # Recursive call
-#       return final_summary
-#     except Exception as e:
-#       st.error(f"Error combining summaries: {str(e)}")
-#       return summaries[0]
-
-#   return summaries[0] if summaries else "Failed to generate summary."
-
 @st.cache_data(ttl=3600)
 def generate_summary_with_gemini(transcript_text: str, max_retries: int = 3) -> str:
     """
     Generate a summary using Google's Gemini API with proper chunking and retry logic
     """
     # Configure Gemini
-    genai.configure(api_key=os.getenv["GEMINI_API_KEY"])
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     model = genai.GenerativeModel('gemini-pro')
     
     # Break long transcripts into chunks (Gemini has a context window of ~30k tokens)
     max_chunk_length = 25000
     chunks = [transcript_text[i:i + max_chunk_length] 
-             for i in range(0, len(transcript_text), max_chunk_length)]
+    for i in range(0, len(transcript_text), max_chunk_length)]
     
     try:
         if len(chunks) == 1:
