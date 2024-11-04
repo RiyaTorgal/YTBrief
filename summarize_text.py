@@ -18,7 +18,7 @@ load_dotenv()
 @st.cache_resource
 def get_youtube_client():
     # return build('youtube', 'v3', developerKey=os.getenv('YOUTUBE_API_KEY'))
-    return build('youtube', 'v3', developerKey=st.secrets('YOUTUBE_API_KEY'))
+    return build('youtube', 'v3', developerKey=st.secrets['YOUTUBE_API_KEY'])
 
 # @st.cache_data(ttl=3600)  # Cache for 1 hour
 # def generate_summary_with_gemini(transcript_text, max_retries=3):
@@ -61,7 +61,7 @@ def generate_summary_with_gemini(transcript_text: str, max_retries: int = 3) -> 
     Generate a summary using Google's Gemini API with proper chunking and retry logic
     """
     # Configure Gemini
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    genai.configure(api_key=os.getenv["GEMINI_API_KEY"])
     model = genai.GenerativeModel('gemini-pro')
     
     # Break long transcripts into chunks (Gemini has a context window of ~30k tokens)
