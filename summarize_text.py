@@ -1,89 +1,108 @@
 import os
 import streamlit as st
 import requests
+import google.generativeai as genai
+from typing import List
+import streamlit as st
 from datetime import datetime
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from dotenv import load_dotenv
-import concurrent.futures
+from langchain.llms import OpenAI
+from langchain.chains import SummarizeChain
+from langchain.document_loaders import TextLoader
+
+load_dotenv()
 
 # Cache the API clients
 @st.cache_resource
 def get_youtube_client():
-    return build('youtube', 'v3', developerKey=os.getenv('YOUTUBE_API_KEY'))
+    # return build('youtube', 'v3', developerKey=os.getenv('YOUTUBE_API_KEY'))
+    return build('youtube', 'v3', developerKey=st.secrets('YOUTUBE_API_KEY'))
 
-@st.cache_data(ttl=3600)  # Cache for 1 hour
-def generate_summary_with_gemini(transcript_text, max_retries=3):
-    """Optimized summary generation with retries and chunking"""
-    if not transcript_text:
-        return "No transcript available."
+# @st.cache_data(ttl=3600)  # Cache for 1 hour
+# def generate_summary_with_gemini(transcript_text, max_retries=3):
+#   """Improved summarization with LangChain"""
+#   # Break long transcripts into chunks for efficient processing
+#   max_chunk_length = 30000  # Adjust as needed
+#   chunks = [transcript_text[i:i + max_chunk_length]
+#             for i in range(0, len(transcript_text), max_chunk_length)]
+
+#   summaries = []
+#   for chunk in chunks:
+#     # Create a LangChain text loader
+#     loader = TextLoader(text=chunk)
+
+#     # Create a summarization chain using OpenAI
+#     summarize_chain = SummarizeChain.from_chain_type(
+#         llm=OpenAI(openai_api_key=os.getenv("GEMINI_API_KEY")),
+#         chain_type="refine"  # Use refined summarization for better quality
+#     )
+
+#     # Generate summaries for each chunk
+#     summary = summarize_chain.run(loader)
+#     summaries.append(summary)
+
+#   # Combine summaries (optional)
+#   if len(summaries) > 1:
+#     combined_text = " ".join(summaries)
+#     try:
+#       final_summary = generate_summary_with_gemini(combined_text)  # Recursive call
+#       return final_summary
+#     except Exception as e:
+#       st.error(f"Error combining summaries: {str(e)}")
+#       return summaries[0]
+
+#   return summaries[0] if summaries else "Failed to generate summary."
+
+@st.cache_data(ttl=3600)
+def generate_summary_with_gemini(transcript_text: str, max_retries: int = 3) -> str:
+    """
+    Generate a summary using Google's Gemini API with proper chunking and retry logic
+    """
+    # Configure Gemini
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    model = genai.GenerativeModel('gemini-pro')
     
-    # Break long transcripts into chunks
-    max_chunk_length = 30000
+    # Break long transcripts into chunks (Gemini has a context window of ~30k tokens)
+    max_chunk_length = 25000
     chunks = [transcript_text[i:i + max_chunk_length] 
              for i in range(0, len(transcript_text), max_chunk_length)]
     
-    summaries = []
-    for chunk in chunks:
-        for attempt in range(max_retries):
-            try:
-                prompt = f"""
-                Provide a concise summary of this YouTube video transcript section.
-                Focus on:
-                - Main topics and key points
-                - Important insights
-                - Core conclusions
-                
-                Transcript:
-                {chunk}
-                """
-                
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={os.getenv('GEMINI_API_KEY')}"
-                
-                payload = {
-                    "contents": [{
-                        "parts": [{
-                            "text": prompt
-                        }]
-                    }],
-                    "generationConfig": {
-                        "temperature": 0.3,  # Lower temperature for more consistent summaries
-                        "topK": 40,
-                        "topP": 0.8,
-                        "maxOutputTokens": 800,
-                    }
-                }
-                
-                response = requests.post(
-                    url, 
-                    json=payload, 
-                    headers={'Content-Type': 'application/json'},
-                    timeout=30  # Add timeout
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if 'candidates' in data and data['candidates']:
-                        summaries.append(data['candidates'][0]['content']['parts'][0]['text'])
-                        break
-            except Exception as e:
-                if attempt == max_retries - 1:
-                    st.error(f"Failed to process chunk: {str(e)}")
-                    return None
-                continue
-    
-    # Combine summaries if text was chunked
-    if len(summaries) > 1:
-        combined_text = " ".join(summaries)
-        # Create final summary
-        try:
-            final_summary = generate_summary_with_gemini(combined_text)
-            return final_summary
-        except Exception as e:
-            st.error(f"Error combining summaries: {str(e)}")
-            return summaries[0]  # Return first summary as fallback
+    try:
+        if len(chunks) == 1:
+            prompt = f"""Please provide a comprehensive summary of this video transcript. 
+            Focus on the main points and key takeaways: {chunks[0]}"""
+            response = model.generate_content(prompt)
+            return response.text
+        else:
+            # For longer videos, summarize each chunk then combine
+            chunk_summaries = []
+            for i, chunk in enumerate(chunks):
+                prompt = f"""Please provide a brief summary of this part ({i+1}/{len(chunks)}) 
+                of the video transcript: {chunk}"""
+                response = model.generate_content(prompt)
+                chunk_summaries.append(response.text)
             
-    return summaries[0] if summaries else "Failed to generate summary."
+            # Combine chunk summaries
+            final_prompt = f"""Combine these segment summaries into a coherent overall summary 
+            of the video: {' '.join(chunk_summaries)}"""
+            final_response = model.generate_content(final_prompt)
+            return final_response.text
+            
+    except Exception as e:
+        if max_retries > 0:
+            st.warning(f"Retrying summary generation... {max_retries} attempts remaining")
+            return generate_summary_with_gemini(transcript_text, max_retries - 1)
+        else:
+            raise Exception(f"Failed to generate summary after all retries: {str(e)}")
+
+# Optional: Progress tracking helper
+def track_summarization_progress(current_chunk: int, total_chunks: int, progress_bar, status_text):
+    """Update the progress bar during summarization"""
+    progress = (current_chunk / total_chunks) * 100
+    progress_bar.progress(int(progress))
+    status_text.text(f"Summarizing part {current_chunk} of {total_chunks}...")
 
 @st.cache_data(ttl=3600)
 def get_video_statistics(video_id):
