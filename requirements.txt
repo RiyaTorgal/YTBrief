@@ -6,3 +6,4 @@ youtube-transcript-api
 google-api-python-client
 google-generativeai
 langchain
+langchain_community
