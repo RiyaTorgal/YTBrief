@@ -1,7 +1,0 @@
-1) Change the overall UI for more user-friendlyness
-2) Make the change in language according to the radio button.
-3) Add a button to enable read-out-loud function.
-    i) Make Audio available offline
-4) Button to generate PDF of the summary
-5) Selection on what type of aummary the user wants to generate (Paragraph, Bullet points, Flash cards, etc.)
-6) Can be made to summarize chapterwise (optional)
