@@ -1,7 +1,0 @@
-streamlit
-python-dotenv
-beautifulsoup4
-requests
-youtube-transcript-api
-google-api-python-client
-google-generativeai
