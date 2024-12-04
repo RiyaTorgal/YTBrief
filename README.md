@@ -2,7 +2,7 @@
 
 ![YTBrief Application](https://github.com/RiyaTorgal/YTBrief/blob/main/images/Ytbrief_Output1.jpeg)
 
-YTBrief is a simple web application that summarizes YouTube videos using the Gemini API. Users can paste a YouTube link, and the application retrieves the video’s transcript and generates a concise summary, making it easier to grasp the content without watching the entire video.
+YTBrief is a simple web application that summarizes YouTube videos using the Gemini API. Users can paste a YouTube link, and the application retrieves the video’s transcript and generates a concise summary, making it easier to grasp the content without watching the entire video. It also provides the summary in the PDF format for offline reading and "Read out Loud" feature to listen to the contents of the summary.
 
 ## Project Structure
 
@@ -18,6 +18,7 @@ The project is organized into two main parts:
 - Displays the stats (Views, Likes, Comments, Duration, Published, Channel).
 - Utilizes the Gemini API for summarization.
 - Makes the summary available in PDF format for offline reading.
+- Reads out loud the summary which you pause/play and stop at anytime.
 
 ## Requirements
 
