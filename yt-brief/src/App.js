@@ -1,13 +1,127 @@
 import React, { useState } from 'react';
 import jsPDF from 'jspdf';
 import './App.css'
-import { IoMdSunny } from "react-icons/io";
+import { IoMdSunny, IoMdMoon } from "react-icons/io";
 import { BiSolidLike } from "react-icons/bi";
 import { FaEye } from "react-icons/fa";
 import { FaComments } from "react-icons/fa";
 import { MdAccessTimeFilled } from "react-icons/md";
 import { MdUpload } from "react-icons/md";
 import { HiSpeakerWave } from "react-icons/hi2";
+import { FaFolder, FaCog } from "react-icons/fa";
+import { MdDashboard } from "react-icons/md";
+
+// MultiSelectDropdown Component
+// function MultiSelectDropdown({ options, onSelectionChange }) {
+//   const [isOpen, setIsOpen] = useState(false);
+//   const [selectedOptions, setSelectedOptions] = useState([]);
+
+//   const toggleDropdown = () => setIsOpen(!isOpen);
+
+//   const handleSelect = (option) => {
+//     const updatedSelection = selectedOptions.includes(option)
+//       ? selectedOptions.filter((item) => item !== option)
+//       : [...selectedOptions, option];
+
+//     setSelectedOptions(updatedSelection);
+//     onSelectionChange(updatedSelection);
+//   };
+
+//   const handleRemove = (option) => {
+//     const updatedSelection = selectedOptions.filter((item) => item !== option);
+//     setSelectedOptions(updatedSelection);
+//     onSelectionChange(updatedSelection);
+//   };
+
+//   return (
+//     <div className="relative w-full">
+//       <button
+//         onClick={toggleDropdown}
+//         className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-left flex items-center flex-wrap space-x-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+//       >
+//         {selectedOptions.length > 0 ? (
+//           selectedOptions.map((option) => (
+//             <span
+//               key={option}
+//               className="inline-flex items-center px-2 py-1 bg-red-600 text-white rounded-full text-sm mr-2 mb-1"
+//             >
+//               {option}
+//               <button
+//                 onClick={(e) => {
+//                   e.stopPropagation(); // Prevent dropdown toggle when removing an option
+//                   handleRemove(option);
+//                 }}
+//                 className="ml-2 text-white hover:text-gray-200"
+//               >
+//                 ✕
+//               </button>
+//             </span>
+//           ))
+//         ) : (
+//           <span className="text-gray-500">Select options</span>
+//         )}
+//         <span className="ml-auto">▼</span>
+//       </button>
+
+//       {isOpen && (
+//         <div className="absolute z-10 w-full mt-2 bg-white border border-gray-300 rounded-md shadow-lg p-2">
+//           <div className="divide-y divide-gray-200">
+//             {options.map((option) => (
+//               <label
+//                 key={option}
+//                 className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
+//               >
+//                 <input
+//                   type="checkbox"
+//                   checked={selectedOptions.includes(option)}
+//                   onChange={() => handleSelect(option)}
+//                   className="mr-2"
+//                 />
+//                 {option}
+//               </label>
+//             ))}
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+const Sidebar = ({ activeItem, onItemClick }) => {
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: <MdDashboard /> },
+    { id: 'files', label: 'Files', icon: <FaFolder /> },
+    { id: 'settings', label: 'Account/Settings', icon: <FaCog /> }
+  ];
+
+  return (
+    <div className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col">
+      {/* Logo/Profile Section */}
+      <div className="p-6 border-b border-gray-200">
+        <div className="logo-placeholder2"></div>
+        {/* <div className="w-8 h-8 bg-gray-100 rounded-full"></div> */}
+      </div>
+      
+      {/* Navigation Menu */}
+      <nav className="flex-1 py-6">
+        {menuItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => onItemClick(item.id)}
+            className={`w-full flex items-center px-6 py-3 justify-center transition-colors duration-200
+              ${activeItem === item.id 
+                ? 'bg-red-50 text-red-600 ' 
+                : 'text-gray-700 hover:bg-gray-50 hover:text-red-600'
+              }`}
+          >
+            <span className="mr-3 text-lg">{item.icon}</span>
+            <span className="font-medium">{item.label}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+};
 
 function YTBrief() {
   const [videoTitle, setVideoTitle] = useState('');
@@ -21,9 +135,20 @@ function YTBrief() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [selectedSummaryType, setSelectedSummaryType] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [activeView, setActiveView] = useState('dashboard');
+  const [isToggled, setIsToggled] = useState(false);
+  // const [selectedChapters, setSelectedChapters] = useState([]);
 
+  // const handleChapterSelection = (selected) => {
+  //   setSelectedChapters(selected);
+  // };
+
+  const handleToggle = () => {
+    setIsToggled(!isToggled);
+  };
   const formatText = (text) => {
     // First handle bold text (wrapped in **)
     const boldFormatted = text.split(/(\*\*.*?\*\*)/).map((part, index) => {
@@ -33,6 +158,7 @@ function YTBrief() {
       }
       return part;
     });
+
     
     // Then handle each part for underline (wrapped in ``)
     return boldFormatted.map((part, index) => {
@@ -395,12 +521,91 @@ function YTBrief() {
   
   return (
     <>
-      <header className="p-4 flex justify-between items-center mb-4">
-        <div className="logo-placeholder1"></div>
-        <IoMdSunny className="text-2xl"/>
+  <div className="flex h-screen bg-gray-50">
+    <Sidebar activeItem={activeView} onItemClick={setActiveView} />
+    
+    <div className="flex flex-col flex-1">
+      {/* Your existing header */}
+      <header className="p-4 flex justify-end items-center mb-1">
+        <button
+        onClick={handleToggle}
+        >
+          
+          {isToggled ? (
+          <IoMdSunny className="text-2xl hover:text-red-400 transition"/>
+        ) : (
+          <IoMdMoon className="text-2xl hover:text-red-400 transition" />
+        )}
+        </button>
+        <div className="logo-placeholder1 ml-6"></div>
       </header>
 
+      {/* Your existing content wrapped in a scrollable container */}
+      <div className="flex-1 overflow-y-auto">
+      {activeView === 'files' && (
+          <div className="flex-1 p-8">
+            <h1 className="text-3xl font-bold mb-6">Files</h1>
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <p className="text-gray-600">Your saved video summaries will appear here.</p>
+              <div className="mt-4 space-y-2">
+                <div className="p-3 border border-gray-200 rounded-md">
+                  <p className="font-medium">Sample Video Summary.pdf</p>
+                  <p className="text-sm text-gray-500">Created 2 hours ago</p>
+                </div>
+                <div className="p-3 border border-gray-200 rounded-md">
+                  <p className="font-medium">Tech Tutorial Summary.pdf</p>
+                  <p className="text-sm text-gray-500">Created yesterday</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeView === 'settings' && (
+          <div className="flex-1 p-8">
+            <h1 className="text-3xl font-bold mb-6">Account & Settings</h1>
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Profile Settings</h3>
+                  <div className="space-y-3">
+                    <input 
+                      type="text" 
+                      placeholder="Your Name" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                    <input 
+                      type="email" 
+                      placeholder="Email Address" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Preferences</h3>
+                  <div className="space-y-3">
+                    <label className="flex items-center">
+                      <input type="checkbox" className="mr-2" />
+                      <span>Auto-save summaries as PDF</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input type="checkbox" className="mr-2" />
+                      <span>Email notifications</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <button className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+    {activeView === 'dashboard' && (
       <div className="max-w-7xl mx-auto p-2 font-sans">
+          <div className="max-w-7xl mx-auto p-2 font-sans">
         <div className="flex items-center space-x-2">
           <h1 className="text-4xl font-bold">YTBrief</h1>
           <h1 className="text-4xl font-bold">:YouTube AI Video Summarizer</h1>
@@ -416,7 +621,7 @@ function YTBrief() {
               type="text"
               id="video-url"
               placeholder="Paste YouTube URL here"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600 mb-2"
             />
             <button
               className={`px-4 text-lg py-2 bg-transparent hover:bg-red-600 text-red-600 hover:text-white border border-red-600 hover:border-transparent rounded-md transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -428,35 +633,63 @@ function YTBrief() {
             {error && <p className="text-red-500 mt-2">{error}</p>}
           </div>
         </div>
+        
+        {/* Filters section */}
         <div className="mb-5">
-          <p className="text-gray-800 text-lg mb-2">Select a language in which you want your summary to be in:</p>
-          <div className="flex items-center space-x-4">
-            {[
-              { value: 'en', label: 'English' },
-              { value: 'es', label: 'Español' },
-              { value: 'fr', label: 'Français' },
-              { value: 'hi', label: 'Hindi' },
-              { value: 'mr', label: 'Marathi' }
-            ].map(lang => (
-              <div key={lang.value} className="flex items-center ml-2">
-                <input 
-                  id={`language-${lang.value}`} 
-                  type="radio" 
-                  name="language" 
-                  value={lang.value} 
-                  className="w-5 h-5"
-                  checked={selectedLanguage === lang.value}
-                  onChange={() => setSelectedLanguage(lang.value)}
-                />
-                <label 
-                  htmlFor={`language-${lang.value}`} 
-                  className="ml-2 text-slate-950"
-                >
-                  {lang.label}
-                </label>
+          <h1 className="text-3xl font-bold mb-4">Filters:</h1>
+          <div className='grid grid-cols-2 gap-2 mt-5'>
+            <div className='flex flex-col h-full justify-center'>
+              <p className="text-gray-800 text-lg mb-2">Select a language for the summary:</p>
+              <div className="flex items-center space-x-4">
+                {[
+                  { value: 'en', label: 'English' },
+                  { value: 'es', label: 'Español' },
+                  { value: 'fr', label: 'Français' },
+                ].map(lang => (
+                  <div key={lang.value} className="flex items-center ml-2">
+                    <input 
+                      id={`language-${lang.value}`} 
+                      type="radio" 
+                      name="language" 
+                      value={lang.value} 
+                      className="w-5 h-5"
+                      checked={selectedLanguage === lang.value}
+                      onChange={() => setSelectedLanguage(lang.value)}
+                    />
+                    <label 
+                      htmlFor={`language-${lang.value}`} 
+                      className="ml-2 text-slate-950"
+                    >
+                      {lang.label}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+            <div className='flex flex-col h-full justify-center'>
+              <div className="w-full">
+                <p className="text-gray-800 text-lg mb-2">Select the type of summary:</p>
+                <select className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+                id="summaryType"
+                value={selectedSummaryType}
+                onChange={(e) => setSelectedSummaryType(e.target.value)}
+                >
+                  <option value="">Choose a type</option>
+                  <option value="flash">Flash Cards</option>
+                  <option value="para">Paragraph</option>
+                  <option value="point">Bullet Points</option>
+                </select>
+              </div>
+            </div>
           </div>
+          {/* <div className="w-full mt-6">
+            <p className="text-gray-800 text-lg mb-2">Select the chapters you want to summarize:</p>
+            <MultiSelectDropdown
+              options={['Introduction', 'Chapter 1', 'Chapter 2', 'Conclusion']}
+              value={selectedChapters}
+              onSelectionChange={handleChapterSelection}
+            />
+          </div> */}
         </div>
 
         {/* Video information section */}
@@ -508,7 +741,6 @@ function YTBrief() {
                       Download Summary as PDF
                     </button>
                   </div>
-                                    
                 </div>
                 <div className="space-y-4">
                   <BulletList items={videoSummary.mainTopics} title="Main Topics and Key Points" />
@@ -519,11 +751,15 @@ function YTBrief() {
             </div>
           </>
         )}
-
+      </div>
+    </div>
+    )}
         <footer className="text-left text-sm text-gray-500 mt-28">
           ©2024 YTBrief All Right Reserved
         </footer>
       </div>
+    </div>
+  </div>
     </>
   );
 }

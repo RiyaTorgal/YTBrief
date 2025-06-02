@@ -3,4 +3,12 @@
   height: 2.5rem;
   background-color: grey;
   border-radius: 50%;
+  padding-left: 1rem;
+}
+
+.logo-placeholder2{
+  width: 7rem;
+  height: 7rem;
+  background-color: grey;
+  border-radius: 50%;
 }

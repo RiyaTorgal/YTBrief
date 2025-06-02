@@ -1,2 +1,4 @@
 .env
 __pycache__
+/ytBrief_Backend/pdf_temp
+/ytBrief_Backend/output.mp3
