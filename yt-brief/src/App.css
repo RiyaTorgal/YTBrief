@@ -1,14 +1,35 @@
 .logo-placeholder1 {
   width: 2.5rem;
   height: 2.5rem;
-  background-color: grey;
   border-radius: 50%;
-  padding-left: 1rem;
 }
 
 .logo-placeholder2{
-  width: 7rem;
-  height: 7rem;
-  background-color: grey;
+  width: 8rem;
+  height: 8rem;
   border-radius: 50%;
+}
+
+.text_tone{
+  color: #ba5c4d;
+}
+
+.menu_clr{
+  color: #af2213;
+  background-color: #ffb7af;
+}
+
+.sidebar_tone {
+  background-color: #f0dfdb;
+  border-color: #d3c7c3;
+}
+
+.bg_tone {
+  background-color: #ffece7;
+}
+
+.icon_tone {
+  color: #ba5c4d;
+  font-size: 1.7rem;
+  margin: 0.3rem;
 }

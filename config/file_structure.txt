@@ -1,0 +1,61 @@
+YTBRIEF/
+│ 
+├── config/
+│   ├── .env
+│   ├── .envexample
+│   └── file_structure.txt
+│ 
+├── images/
+│ 
+├── yt-brief/
+│   ├── node_modules/
+│   │
+│   ├── public/
+│   │
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Sidebar.js
+│   │   │   ├── FilterSection.js
+│   │   │   ├── Header.js
+│   │   │   ├── StatsRow.js
+│   │   │   ├── BulletList.js
+│   │   │   ├── MultiSelectDropdown.js
+│   │   │   └── VideoInformation.js
+│   │   │
+│   │   ├── hooks/
+│   │   │   ├── useSpeechSynthesis.js
+│   │   │   └── useVideoSummary.js
+│   │   │
+│   │   ├── page/
+│   │   │   ├── Files.js
+│   │   │   ├── Setting.js
+│   │   │   └── Dashboard.js
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── helpers.js
+│   │   │   └── pdfGenerator.js
+│   │   │
+│   │   ├── App.css
+│   │   ├── App.js
+│   │   ├── index.css
+│   │   ├── index.js
+│   │   ├── reportWebVitals.js
+│   │   └── setupTests.js
+│   │ 
+│   ├── .gitignore
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── README.md
+│   └── tailwind.config.js
+│ 
+├── ytBrief_Backend/
+│   ├── app.py
+│   ├── requirements.txt
+│   ├── scrape_yt.py
+│   └── summarize_text.py
+│ 
+├── .gitignore
+├── LICENSE
+├── README.md
+├── thumbnail.jpg
+└── YTBrief(New Layout).png
