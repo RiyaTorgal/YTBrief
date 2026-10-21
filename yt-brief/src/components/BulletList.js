@@ -3,7 +3,7 @@ const BulletList = ({ items, title }) => {
     return (
       <div className="mb-6">
         <h2 className="font-semibold text-2xl mb-2">{title}:</h2>
-        <ul className="list-disk list-inside ml-6 text-gray-700 text-lg space-y-2">
+        <ul className="list-disk list-inside ml-6 text-black text-lg space-y-2">
           {items.map((item, index) => (
             <li key={index} className="pl-2">
               <span className="mr-2">•</span>

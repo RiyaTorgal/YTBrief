@@ -13,13 +13,13 @@ const SignupForm = ({ onClose, onSwitchToLogin }) => {
     
     return(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg_tone rounded-lg shadow-2xl w-full max-w-md mx-4 transform transition-all">
+            <div className="bg_tone rounded-lg w-full max-w-md mx-4 transform transition-all border border-x-slate-800">
                 {/* Modal Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h3 className="text-xl font-semibold text-gray-800">Create Account</h3>
+                    <h3 className="text-xl font-semibold text-black ">Create Account</h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition"
+                        className="text-gray-300 hover:text-gray-600 transition"
                     >
                         <FiX size={24} />
                     </button>
@@ -29,7 +29,7 @@ const SignupForm = ({ onClose, onSwitchToLogin }) => {
                 <div className="p-6">
                     <form onSubmit={handleSignupSubmit} className="space-y-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
                                 Full Name
                             </label>
                             <div className="relative">
@@ -46,7 +46,7 @@ const SignupForm = ({ onClose, onSwitchToLogin }) => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
                                 Email Address
                             </label>
                             <div className="relative">
@@ -63,7 +63,7 @@ const SignupForm = ({ onClose, onSwitchToLogin }) => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
                                 Password
                             </label>
                             <div className="relative">
@@ -80,7 +80,7 @@ const SignupForm = ({ onClose, onSwitchToLogin }) => {
                         </div>
 
                         <div>
-                            <label className="flex items-start text-sm text-gray-600">
+                            <label className="flex items-start text-sm text-gray-300">
                                 <input 
                                     type="checkbox" 
                                     className="mr-3 mt-1 rounded border-gray-300 text-red-600 focus:ring-red-500" 
@@ -97,14 +97,14 @@ const SignupForm = ({ onClose, onSwitchToLogin }) => {
 
                         <button
                             type="submit"
-                            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 transform hover:scale-[1.02]"
+                            className="w-full bg-red-600 hover:bg-red-700 text-black font-semibold py-3 px-4 rounded-lg transition duration-200 transform hover:scale-[1.02]"
                         >
                             Create Account
                         </button>
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-300">
                             Already have an account? 
                             <button 
                                 onClick={onSwitchToLogin}

@@ -12,6 +12,7 @@
 
 .text_tone{
   color: #ba5c4d;
+  /* color: #fca898; */
 }
 
 .menu_clr{
@@ -21,11 +22,13 @@
 
 .sidebar_tone {
   background-color: #f0dfdb;
-  border-color: #d3c7c3;
+  /* background-color: #282828; */
+  /* border-color: #585858; */
 }
 
 .bg_tone {
   background-color: #ffece7;
+  /* background-color: #000000; */
 }
 
 .icon_tone {

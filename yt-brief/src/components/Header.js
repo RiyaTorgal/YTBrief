@@ -25,9 +25,9 @@ const Header = ({ onNavigate }) => {
                 onClick={handleToggle}
                 >
                 {isToggled ? (
-                    <IoMdSunny className="text-2xl hover:text-red-400 transition"/>
+                    <IoMdSunny className="text-black text-2xl hover:text-red-400 transition"/>
                 ) : (
-                    <IoMdMoon className="text-2xl hover:text-red-400 transition" />
+                    <IoMdMoon className=" text-black text-2xl hover:text-red-400 transition" />
                 )}
             </button>
             {/* <div className="logo-placeholder1 ml-6"></div> */}
@@ -35,13 +35,13 @@ const Header = ({ onNavigate }) => {
                 <img src="/YTBrief_User.png" alt="YTBrief User" className="logo-placeholder1 ml-5" />
             </button> */}
             <button
-                    className={`ml-5 px-4 text-sm font-semibold py-2 bg-transparent hover:bg-red-500 text-red-600 hover:text-white border border-red-600 hover:border-transparent rounded-md transition`}
+                    className={`ml-5 px-4 text-sm font-semibold py-2 bg-transparent hover:bg-red-500 text-red-600 hover:text-black border border-red-600 hover:border-transparent rounded-md transition`}
                     onClick={handleLoginClick}
                     >
                     Log In
             </button>
             <button
-                    className={`ml-5 px-4 text-sm font-semibold py-2 bg-red-600 hover:bg-red-200 text-white hover:text-red-600 border border-red-600 hover:border-transparent rounded-md transition`}
+                    className={`ml-5 px-4 text-sm font-semibold py-2 bg-red-600 hover:bg-transparent text-black hover:text-red-600 border border-red-600  rounded-md transition`}
                     onClick={handleSignupClick}
                     >
                 Sign Up

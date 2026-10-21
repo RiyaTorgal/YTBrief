@@ -32,7 +32,7 @@ function MultiSelectDropdown({ options, onSelectionChange }) {
           selectedOptions.map((option) => (
             <span
               key={option}
-              className="inline-flex items-center px-2 py-1 bg-red-600 text-white rounded-full text-sm mr-2 mb-1"
+              className="inline-flex items-center px-2 py-1 bg-red-600 text-black rounded-full text-sm mr-2 mb-1"
             >
               {option}
               <button
@@ -40,7 +40,7 @@ function MultiSelectDropdown({ options, onSelectionChange }) {
                   e.stopPropagation(); // Prevent dropdown toggle when removing an option
                   handleRemove(option);
                 }}
-                className="ml-2 text-white hover:text-gray-200"
+                className="ml-2 text-black hover:text-gray-200"
               >
                 ✕
               </button>

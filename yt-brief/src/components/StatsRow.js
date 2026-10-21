@@ -1,8 +1,8 @@
 const StatsRow = ({ icon, label, value }) => (
   <div className="flex items-center space-x-3">
-    <span className="text-xl">{icon}</span>
-    <span className="text-lg">{label}:</span>
-    <span className="text-lg">{value}</span>
+    <span >{icon}</span>
+    <span className="text-xl font-bold">{label}:</span>
+    <span className="text_tone text-xl font-bold">{value}</span>
   </div>
 );
 

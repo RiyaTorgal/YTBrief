@@ -28,8 +28,8 @@ const VideoInformation = ({
               </div>
 
               <div className="flex-1 ml-6 mt-6">
-                <h1 className="text-3xl font-bold mb-4">Video Stats:</h1>
-                <div className="space-y-2">
+                <h1 className="text-3xl text-black font-bold mb-4">Video Stats:</h1>
+                <div className=" text-black space-y-2">
                   <StatsRow icon={<BiSolidLike className='icon_tone'/>} label="Likes" value={videoStats.Likes} />
                   <StatsRow icon={<FaEye className='icon_tone'/>} label="Views" value={videoStats.Views} />
                   <StatsRow icon={<FaComments className='icon_tone'/>} label="Comments" value={videoStats.Comments} />
@@ -40,29 +40,29 @@ const VideoInformation = ({
             </div>
 
             <div className="mb-6">
-              <h1 className="text-3xl font-bold mb-1">{videoTitle}</h1>
+              <h1 className="text-3xl text-black font-bold mb-1">{videoTitle}</h1>
               <h2 className="text-gray-600 font-semibold text_tone text-2xl mb-4">Channel: {videoStats.Channel}</h2>
               
               <div className='border border-slate-300 rounded-lg shadow-md p-5'>
                 <div className="flex mt-1 justify-between items-center mb-4">
-                  <h2 className="text-3xl font-bold">Video Summary</h2>
+                  <h2 className="text-3xl text-black font-bold">Video Summary</h2>
                   <div className="flex p-2">
                     <button 
                       onClick={onReadAloud}
-                      className="flex items-center px-4 py-2 hover:bg-red-600 text-red-600 hover:text-white border border-red-600 hover:border-transparent rounded-md transition">
+                      className="flex items-center px-4 py-2 hover:bg-red-600 text-red-600 hover:text-black border border-red-600 hover:border-transparent rounded-md transition">
                       <HiSpeakerWave className='text-xl flex mr-3'/>
                       {isSpeaking ? 'Stop' : 'Read Out Loud'}
                     </button>
                     {isSpeaking && (
                       <button 
                         onClick={onTogglePause}
-                        className="flex ml-4 items-center px-4 py-2 hover:bg-red-600 text-red-600 hover:text-white border border-red-600 hover:border-transparent rounded-md transition">
+                        className="flex ml-4 items-center px-4 py-2 hover:bg-red-600 text-red-600 hover:text-black border border-red-600 hover:border-transparent rounded-md transition">
                         {isPaused ? 'Play' : 'Pause'}
                       </button>
                     )}
                     <button 
                       onClick={onDownloadPDF}
-                      className="flex ml-4 items-center px-4 py-2 hover:bg-red-600 text-red-600 hover:text-white border border-red-600 hover:border-transparent rounded-md transition"
+                      className="flex ml-4 items-center px-4 py-2 hover:bg-red-600 text-red-600 hover:text-black border border-red-600 hover:border-transparent rounded-md transition"
                     >
                       Download Summary as PDF
                     </button>

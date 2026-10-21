@@ -26,7 +26,7 @@ const Sidebar = ({ activeItem, onItemClick }) => {
             className={`w-full flex items-center px-6 py-3 justify-center transition-colors duration-200
               ${activeItem === item.id 
                 ? 'menu_clr' 
-                : 'text-gray-700 hover:bg-gray-50 hover:text-red-600'
+                : 'text-black hover:bg-gray-50 hover:text-red-600'
               }`}
           >
             <span className="mr-3 text-lg">{item.icon}</span>
