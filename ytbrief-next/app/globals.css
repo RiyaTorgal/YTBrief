@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #FAF7F5; --card: #FFFFFF; --muted: #F2EDE9;
+  --foreground: #171717; --muted-foreground: #737373;
+  --border: #E8E1DB; --primary: #E53935; --primary-dark: #B83232;
+}
+.dark {
+  --background: #0D0D0F; --card: #161619; --muted: #222225;
+  --foreground: #F5F5F5; --muted-foreground: #A1A1AA;
+  --border: #2A2A2E; --primary: #E53935; --primary-dark: #FF6B66;
+}
+@theme inline {
+  --color-background: var(--background); --color-card: var(--card);
+  --color-muted: var(--muted); --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground); --color-border: var(--border);
+  --color-primary: var(--primary); --color-primary-dark: var(--primary-dark);
+  --font-serif: var(--font-fraunces), Georgia, serif;
+}
+body { background: var(--background); color: var(--foreground); }
+*:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

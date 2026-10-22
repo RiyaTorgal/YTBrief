@@ -3,6 +3,6 @@ flask-cors
 python-dotenv
 beautifulsoup4
 requests
-youtube-transcript-api
+youtube-transcript-api>=1.0
 google-api-python-client
 google-generativeai
