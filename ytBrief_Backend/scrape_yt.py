@@ -77,113 +77,127 @@ def get_available_transcripts(video_id):
         print(f"Error getting available transcripts: {e}")
         return []
 
+
 def transcript_with_retry(video_id, max_retries=3, delay_range=(1, 3)):
-    """Get transcript with retry logic and better error handling"""
-    
+    """Retrieve and clean a transcript, avoiding retries for persistent HTTP 403 errors."""
+
     if not video_id:
         return "Error: No video ID provided"
-    
+
     for attempt in range(max_retries):
         try:
-            # Try to get transcript list first
             transcript_list = YouTubeTranscriptApi().list(video_id)
-            
-            # Try manual transcripts first (higher quality)
-            manual_transcripts = [t for t in transcript_list if not t.is_generated]
-            auto_transcripts = [t for t in transcript_list if t.is_generated]
-            
+
+            manual_transcripts = [
+                t for t in transcript_list if not t.is_generated
+            ]
+            auto_transcripts = [
+                t for t in transcript_list if t.is_generated
+            ]
+
             selected_transcript = None
-            
-            # Priority 1: Manual English transcripts
+            english_codes = ("en", "en-US", "en-GB", "en-CA", "en-AU")
+
+            # Priority 1: Manual English
             for transcript in manual_transcripts:
-                if transcript.language_code in ['en', 'en-US', 'en-GB', 'en-CA', 'en-AU']:
+                if transcript.language_code in english_codes:
                     selected_transcript = transcript
                     break
-            
-            # Priority 2: Auto English transcripts
-            if not selected_transcript:
+
+            # Priority 2: Auto-generated English
+            if selected_transcript is None:
                 for transcript in auto_transcripts:
-                    if transcript.language_code in ['en', 'en-US', 'en-GB', 'en-CA', 'en-AU']:
+                    if transcript.language_code in english_codes:
                         selected_transcript = transcript
                         break
-            
-            # Priority 3: First available manual transcript (any language)
-            if not selected_transcript and manual_transcripts:
+
+            # Priority 3: Any manual transcript
+            if selected_transcript is None and manual_transcripts:
                 selected_transcript = manual_transcripts[0]
-            
-            # Priority 4: First available auto transcript (any language)
-            if not selected_transcript and auto_transcripts:
+
+            # Priority 4: Any auto-generated transcript
+            if selected_transcript is None and auto_transcripts:
                 selected_transcript = auto_transcripts[0]
-            
-            if not selected_transcript:
+
+            if selected_transcript is None:
                 return "No transcripts available for this video."
-            
-            # Fetch the transcript
+
             transcript_data = selected_transcript.fetch()
-            
-            # Process the transcript
             transcript_parts = []
+
             for entry in transcript_data:
                 text = entry.text.strip()
-                
-                # Clean up the text
-                text = re.sub(r'\[.*?\]', '', text)  # Remove [Music], [Applause], etc.
-                text = re.sub(r'\(.*?\)', '', text)  # Remove (inaudible), etc.
-                text = re.sub(r'♪.*?♪', '', text)    # Remove music notes
-                text = re.sub(r'<.*?>', '', text)    # Remove HTML tags
-                
-                # Remove common transcript artifacts
-                text = re.sub(r'\b(um|uh|ah|er|mm)\b', '', text, flags=re.IGNORECASE)
-                
-                if text and len(text.strip()) > 0:
+                text = re.sub(r'\[.*?\]', '', text)
+                text = re.sub(r'\(.*?\)', '', text)
+                text = re.sub(r'♪.*?♪', '', text)
+                text = re.sub(r'<.*?>', '', text)
+                text = re.sub(
+                    r'\b(um|uh|ah|er|mm)\b',
+                    '',
+                    text,
+                    flags=re.IGNORECASE,
+                )
+
+                if text.strip():
                     transcript_parts.append(text.strip())
-            
-            # Join and clean up final transcript
-            full_transcript = ' '.join(transcript_parts)
-            full_transcript = re.sub(r'\s+', ' ', full_transcript).strip()
-            
+
+            full_transcript = re.sub(
+                r'\s+', ' ', ' '.join(transcript_parts)
+            ).strip()
+
             if not full_transcript:
                 return "Transcript is empty after processing."
-            
+
             return full_transcript
-            
+
         except TranscriptsDisabled:
             return "Transcripts are disabled for this video."
-        
+
         except NoTranscriptFound:
             return "No transcript found for this video."
-        
+
         except VideoUnavailable:
             return "Video is unavailable or private."
-        
-        except RequestBlocked:
+
+        except (RequestBlocked, YouTubeRequestFailed) as e:
+            error_text = str(e)
+
+            # A persistent 403 is not worth retrying repeatedly.
+            if "403" in error_text or "forbidden" in error_text.lower():
+                print(
+                    "YouTube denied the transcript request (HTTP 403). "
+                    "Not retrying. Check the deployment environment."
+                )
+                return (
+                    "YouTube is blocking transcript retrieval from the "
+                    "server (HTTP 403). Please try again later."
+                )
+
             if attempt < max_retries - 1:
-                delay = random.uniform(*delay_range) * (2 ** attempt)  # Exponential backoff
-                print(f"Rate limited. Retrying in {delay:.1f} seconds...")
+                delay = random.uniform(*delay_range) * (2 ** attempt)
+                print(
+                    f"Transcript request failed: {error_text}. "
+                    f"Retrying in {delay:.1f} seconds..."
+                )
                 time.sleep(delay)
                 continue
-            else:
-                return "Too many requests. Please try again later."
-        
-        except YouTubeRequestFailed as e:
-            if attempt < max_retries - 1:
-                delay = random.uniform(*delay_range)
-                print(f"YouTube request failed: {e}. Retrying in {delay:.1f} seconds...")
-                time.sleep(delay)
-                continue
-            else:
-                return f"YouTube request failed after {max_retries} attempts: {str(e)}"
-        
+
+            return f"YouTube transcript request failed: {error_text}"
+
         except Exception as e:
             if attempt < max_retries - 1:
-                delay = random.uniform(*delay_range)
-                print(f"Unexpected error: {e}. Retrying in {delay:.1f} seconds...")
+                delay = random.uniform(*delay_range) * (2 ** attempt)
+                print(
+                    f"Unexpected transcript error: {e}. "
+                    f"Retrying in {delay:.1f} seconds..."
+                )
                 time.sleep(delay)
                 continue
-            else:
-                return f"Error retrieving transcript after {max_retries} attempts: {str(e)}"
-    
+
+            return f"Error retrieving transcript: {e}"
+
     return "Failed to retrieve transcript after multiple attempts."
+
 
 def transcript(video_id):
     """Main transcript function with enhanced error handling"""
