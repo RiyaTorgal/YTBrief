@@ -3,7 +3,7 @@ flask-cors
 python-dotenv
 beautifulsoup4
 requests
-youtube-transcript-api>=1.0
+youtube-transcript-api==1.2.4
 google-api-python-client
 google-generativeai
 gunicorn

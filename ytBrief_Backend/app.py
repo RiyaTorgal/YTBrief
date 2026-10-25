@@ -9,6 +9,13 @@ from summarize_text import generate_summary_with_gemini, get_video_statistics
 from structured_summary import generate_structured_summary, SummaryError
 from chapters import get_chapters
 import store
+from importlib.metadata import version
+
+print(
+    "YTBRIEF_DIAGNOSTIC: youtube-transcript-api =",
+    version("youtube-transcript-api"),
+    flush=True,
+)
 
 app = Flask(__name__)
 # Set CORS_ORIGINS="http://localhost:3000,https://your-app.vercel.app" in production
