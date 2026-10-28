@@ -9,8 +9,48 @@ from youtube_transcript_api._errors import (
     RequestBlocked,
     YouTubeRequestFailed
 )
+import os
 import time
 import random
+
+from dotenv import load_dotenv
+
+import store
+
+load_dotenv()
+
+SUPADATA_URL = "https://api.supadata.ai/v1/transcript"
+
+# Same prefixes app.py treats as "transcript failed" (used here only to decide what to cache)
+_FAIL_PREFIXES = (
+    "Error", "No ", "Transcript", "Video is unavailable", "Too many", "Failed", "YouTube request failed",
+)
+
+
+def _provider():
+    """'supadata' (hosted, works from cloud servers) or 'local' (youtube-transcript-api).
+
+    Set TRANSCRIPT_PROVIDER explicitly. If unset, uses Supadata when SUPADATA_API_KEY exists.
+    """
+    explicit = (os.getenv("TRANSCRIPT_PROVIDER") or "").strip().lower()
+    if explicit in ("supadata", "local"):
+        return explicit
+    return "supadata" if os.getenv("SUPADATA_API_KEY") else "local"
+
+
+def _clean_segments(segments):
+    """Strip captions noise from each segment and join into one string."""
+    parts = []
+    for text in segments:
+        text = (text or "").strip()
+        text = re.sub(r'\[.*?\]', '', text)
+        text = re.sub(r'\(.*?\)', '', text)
+        text = re.sub(r'♪.*?♪', '', text)
+        text = re.sub(r'<.*?>', '', text)
+        text = re.sub(r'\b(um|uh|ah|er|mm)\b', '', text, flags=re.IGNORECASE)
+        if text.strip():
+            parts.append(text.strip())
+    return re.sub(r'\s+', ' ', ' '.join(parts)).strip()
 
 def extractVidID(url):
     """Extract video ID from YouTube URL"""
@@ -123,27 +163,7 @@ def transcript_with_retry(video_id, max_retries=3, delay_range=(1, 3)):
                 return "No transcripts available for this video."
 
             transcript_data = selected_transcript.fetch()
-            transcript_parts = []
-
-            for entry in transcript_data:
-                text = entry.text.strip()
-                text = re.sub(r'\[.*?\]', '', text)
-                text = re.sub(r'\(.*?\)', '', text)
-                text = re.sub(r'♪.*?♪', '', text)
-                text = re.sub(r'<.*?>', '', text)
-                text = re.sub(
-                    r'\b(um|uh|ah|er|mm)\b',
-                    '',
-                    text,
-                    flags=re.IGNORECASE,
-                )
-
-                if text.strip():
-                    transcript_parts.append(text.strip())
-
-            full_transcript = re.sub(
-                r'\s+', ' ', ' '.join(transcript_parts)
-            ).strip()
+            full_transcript = _clean_segments(entry.text for entry in transcript_data)
 
             if not full_transcript:
                 return "Transcript is empty after processing."
@@ -199,12 +219,80 @@ def transcript_with_retry(video_id, max_retries=3, delay_range=(1, 3)):
     return "Failed to retrieve transcript after multiple attempts."
 
 
+def _transcript_supadata(video_id):
+    """Fetch existing captions via Supadata (mode=native: never triggers paid AI generation)."""
+    key = os.getenv("SUPADATA_API_KEY")
+    if not key:
+        return "Error: SUPADATA_API_KEY is not configured on the server."
+
+    params = {
+        "url": f"https://www.youtube.com/watch?v={video_id}",
+        "lang": "en",
+        "mode": "native",
+    }
+    resp = None
+    for attempt in range(2):
+        try:
+            resp = requests.get(
+                SUPADATA_URL, headers={"x-api-key": key}, params=params, timeout=30
+            )
+        except requests.RequestException as e:
+            return f"Error retrieving transcript: {e}"
+        if resp.status_code == 429 and attempt == 0:
+            time.sleep(1.2)  # free tier: 1 request/second
+            continue
+        break
+
+    if resp.status_code == 429:
+        return "Too many requests to the transcript service. Please try again later."
+    if resp.status_code != 200:
+        print(f"Supadata returned {resp.status_code}: {resp.text[:300]}", flush=True)
+        if resp.status_code in (206, 404):
+            return "No transcript found for this video."
+        return f"Failed to retrieve transcript (service returned {resp.status_code})."
+
+    try:
+        content = resp.json().get("content")
+    except ValueError:
+        return "Failed to retrieve transcript (unreadable service response)."
+
+    if isinstance(content, str):
+        segments = [content]
+    else:
+        segments = [c.get("text", "") for c in (content or [])]
+
+    full_transcript = _clean_segments(segments)
+    return full_transcript or "No transcript found for this video."
+
+
 def transcript(video_id):
-    """Main transcript function with enhanced error handling"""
-    return transcript_with_retry(video_id)
+    """Main transcript function: cache -> provider. Returns text, or an error string."""
+    if not video_id:
+        return "Error: No video ID provided"
+
+    cached = store.get_cached_transcript(video_id)
+    if cached:
+        print(f"[transcript] {video_id}: served from cache (no provider call)", flush=True)
+        return cached
+
+    provider = _provider()
+    print(f"[transcript] {video_id}: cache miss, fetching via '{provider}'", flush=True)
+    if provider == "supadata":
+        result = _transcript_supadata(video_id)
+    else:
+        result = transcript_with_retry(video_id)
+
+    if result and not result.startswith(_FAIL_PREFIXES):
+        store.cache_transcript(video_id, result)
+        print(f"[transcript] {video_id}: fetched via '{provider}' and cached", flush=True)
+    else:
+        print(f"[transcript] {video_id}: '{provider}' failed -> {result[:120]}", flush=True)
+    return result
 
 def get_transcript_info(video_id):
     """Get detailed information about available transcripts"""
+    if _provider() == "supadata":
+        return {'error': 'Transcript details are only available with TRANSCRIPT_PROVIDER=local'}
     try:
         transcript_list = YouTubeTranscriptApi().list(video_id)
         

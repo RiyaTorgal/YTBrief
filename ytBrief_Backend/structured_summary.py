@@ -64,6 +64,16 @@ def _parse(text):
     }
 
 
+def _extract_text(data):
+    """Join the text parts of the first candidate (skipping thought parts)."""
+    cand = (data.get("candidates") or [None])[0] or {}
+    parts = (cand.get("content") or {}).get("parts") or []
+    text = "".join(
+        p.get("text", "") for p in parts if isinstance(p, dict) and not p.get("thought")
+    )
+    return text, cand.get("finishReason")
+
+
 def generate_structured_summary(transcript, language="en", summary_type="quick", chapter_titles=None):
     if not GEMINI_API_KEY:
         raise SummaryError("gemini_error", "Gemini API key not configured")
@@ -79,6 +89,10 @@ def generate_structured_summary(transcript, language="en", summary_type="quick",
             "responseMimeType": "application/json",
         },
     }
+    # Gemini 2.5 Flash "thinks" by default and thinking tokens count against
+    # maxOutputTokens, which can cut the JSON off mid-way. Summaries don't need it.
+    if "2.5-flash" in GEMINI_MODEL:
+        payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": 0}
     try:
         # key goes in a header so it never ends up in logs or exception messages
         r = requests.post(url, json=payload, headers={"x-goog-api-key": GEMINI_API_KEY}, timeout=90)
@@ -93,7 +107,30 @@ def generate_structured_summary(transcript, language="en", summary_type="quick",
         raise SummaryError("gemini_error", f"Gemini error {r.status_code}: {msg}".strip())
 
     try:
-        text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+        data = r.json()
+    except ValueError:
+        print(f"[gemini] non-JSON HTTP body: {r.text[:200]!r}", flush=True)
+        raise SummaryError("gemini_error", "Gemini returned an unreadable response")
+
+    text, finish = _extract_text(data)
+    if not text:
+        block = (data.get("promptFeedback") or {}).get("blockReason")
+        print(f"[gemini] empty output: finishReason={finish} blockReason={block}", flush=True)
+        if block:
+            raise SummaryError("gemini_error", f"Gemini blocked this request ({block})")
+        raise SummaryError("gemini_error", f"Gemini returned no text (finishReason: {finish})")
+
+    try:
         return _parse(text)
-    except (KeyError, IndexError, ValueError, TypeError):
+    except (ValueError, TypeError, AttributeError):
+        print(
+            f"[gemini] unparseable JSON: finishReason={finish} "
+            f"usage={data.get('usageMetadata')} tail={text[-200:]!r}",
+            flush=True,
+        )
+        if finish == "MAX_TOKENS":
+            raise SummaryError(
+                "gemini_error",
+                "Gemini ran out of output space. Try a shorter summary type or a shorter video.",
+            )
         raise SummaryError("gemini_error", "Gemini returned an unreadable response")

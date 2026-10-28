@@ -4,16 +4,15 @@ from datetime import datetime, timezone
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from scrape_yt import extractVidID, transcript, get_transcript_info
+from scrape_yt import extractVidID, transcript, get_transcript_info, _provider
 from summarize_text import generate_summary_with_gemini, get_video_statistics
 from structured_summary import generate_structured_summary, SummaryError
 from chapters import get_chapters
 import store
-from importlib.metadata import version
 
 print(
-    "YTBRIEF_DIAGNOSTIC: youtube-transcript-api =",
-    version("youtube-transcript-api"),
+    "YTBRIEF transcript provider:", _provider(),
+    "| SUPADATA_API_KEY set:", bool(os.getenv("SUPADATA_API_KEY")),
     flush=True,
 )
 
@@ -100,6 +99,7 @@ def summarize():
     try:
         parts = generate_structured_summary(text, language, summary_type, chosen)
     except SummaryError as e:
+        print(f"[summary] {e.code}: {e}", flush=True)
         return api_error(e.code, 502, str(e))
 
     summary = {
